@@ -13,57 +13,64 @@ const firebaseConfig = {
   appId: "1:539714982046:web:d09296102e765bcfcb2b8f"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Инициализация Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// Переключение между формами
+function showRegister() {
+    document.getElementById("login-form").classList.add("hidden");
+    document.getElementById("register-form").classList.remove("hidden");
+}
+
+function showLogin() {
+    document.getElementById("register-form").classList.add("hidden");
+    document.getElementById("login-form").classList.remove("hidden");
+}
+
+// Регистрация
+function register() {
+    const username = document.getElementById("register-username").value;
+    const email = document.getElementById("register-email").value;
+    const password = document.getElementById("register-password").value;
+    const errorElement = document.getElementById("register-error");
+
+    // Создаём пользователя в Firebase Auth
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            
+            // Сохраняем имя пользователя в Firestore
+            db.collection("users").doc(user.uid).set({
+                username: username,
+                email: email
+            }).then(() => {
+                alert("Регистрация успешна!");
+                // Перенаправляем на главную (позже добавим)
+                // window.location.href = "profiles.html";
+            }).catch((error) => {
+                errorElement.textContent = "Ошибка сохранения данных: " + error.message;
+            });
+        })
+        .catch((error) => {
+            errorElement.textContent = "Ошибка регистрации: " + error.message;
+        });
+}
 
 // Вход
 function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+    const errorElement = document.getElementById("login-error");
+
     auth.signInWithEmailAndPassword(email, password)
         .then(() => {
-            document.getElementById("auth-section").style.display = "none";
-            document.getElementById("profile-section").style.display = "block";
-            loadProfiles();
+            alert("Вход выполнен!");
+            // Перенаправляем на главную (позже добавим)
+            // window.location.href = "profiles.html";
         })
-        .catch(error => alert("Ошибка: " + error.message));
-}
-
-// Добавление анкеты
-function addProfile() {
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    const experience = document.getElementById("experience").value;
-    const direction = document.getElementById("direction").value;
-
-    db.collection("profiles").add({
-        name,
-        phone,
-        experience,
-        direction,
-        userId: auth.currentUser.uid
-    }).then(() => {
-        alert("Анкета добавлена!");
-        loadProfiles();
-    });
-}
-
-// Загрузка всех анкет
-function loadProfiles() {
-    db.collection("profiles").get()
-        .then(querySnapshot => {
-            let html = "";
-            querySnapshot.forEach(doc => {
-                const data = doc.data();
-                html += `
-                    <div>
-                        <h3>${data.name}</h3>
-                        <p>Телефон: ${data.phone}</p>
-                        <p>Стаж: ${data.experience} лет</p>
-                        <p>Направление: ${data.direction}</p>
-                    </div>
-                `;
-            });
-            document.getElementById("profiles-list").innerHTML = html;
+        .catch((error) => {
+            errorElement.textContent = "Ошибка входа: " + error.message;
         });
 }
