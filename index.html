@@ -11,9 +11,52 @@
         <button id="authButton">Вход/Регистрация</button>
     </header>
     <main>
-        <div class="container">
-            <h1>Добро пожаловать!</h1>
-            <p>Это главная страница вашего сайта</p>
+        <!-- Баннер -->
+        <section class="banner">
+            <div class="banner-content">
+                <h1>Место для ваших идей</h1>
+                <p>Делитесь творческими проектами, находите вдохновение и единомышленников</p>
+                <button id="getStartedBtn">Начать сейчас</button>
+            </div>
+        </section>
+
+        <!-- Секция с идеями -->
+        <section class="ideas-section">
+            <h2>Популярные идеи</h2>
+            <div id="featuredIdeas" class="ideas-grid">
+                <!-- Карточки будут генерироваться через JS -->
+            </div>
+        </section>
+
+        <section class="ideas-section">
+            <h2>Последние добавленные</h2>
+            <div id="recentIdeas" class="ideas-grid">
+                <!-- Карточки будут генерироваться через JS -->
+            </div>
+        </section>
+
+        <!-- Форма добавления идеи (только для авторизованных) -->
+        <div id="addIdeaForm" class="add-idea-container" style="display:none;">
+            <h2>Поделитесь своей идеей</h2>
+            <div class="form-group">
+                <label for="ideaTitle">Название идеи:</label>
+                <input type="text" id="ideaTitle" placeholder="Краткое и понятное название">
+            </div>
+            <div class="form-group">
+                <label for="ideaDescription">Описание:</label>
+                <textarea id="ideaDescription" placeholder="Расскажите подробнее о своей идее..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="ideaCategory">Категория:</label>
+                <select id="ideaCategory">
+                    <option value="design">Дизайн</option>
+                    <option value="tech">Технологии</option>
+                    <option value="art">Искусство</option>
+                    <option value="business">Бизнес</option>
+                    <option value="education">Образование</option>
+                </select>
+            </div>
+            <button id="submitIdeaBtn">Опубликовать идею</button>
         </div>
     </main>
 
