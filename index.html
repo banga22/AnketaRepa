@@ -1,94 +1,35 @@
+<!DOCTYPE html>
 <html>
 <head>
+    <title>Анкеты специалистов</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личная анкета</title>
-
-    <!-- Импорт стилей -->
-    <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-<div class="container">
-    <h1>Личная анкета пользователя</h1>
-    <form id="personalForm">
-        <div class="form-group">
-            <label for="firstName" class="required">Имя:</label>
-            <input type="text" id="firstName" name="firstName" required>
-            <div class="error" id="firstNameError"></div>
-        </div>
-
-        <div class="form-group">
-            <label for="lastName" class="required">Фамилия:</label>
-            <input type="text" id="lastName" name="lastName" required>
-            <div class="error" id="lastNameError"></div>
-        </div>
-
-        <div class="form-group">
-            <label for="birthDate" class="required">Дата рождения:</label>
-            <input type="date" id="birthDate" name="birthDate" required>
-            <div class="error" id="birthDateError"></div>
-        </div>
-
-        <div class="form-group">
-            <label class="required">Пол:</label>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="gender" value="male" required> Мужской
-                </label>
-                <label>
-                    <input type="radio" name="gender" value="female" required> Женский
-                </label>
-            </div>
-            <div class="error" id="genderError"></div>
-        </div>
-
-        <div class="form-group">
-            <label for="hobbies" class="required">Хобби:</label>
-            <div class="multiselect">
-                <button type="button" class="multiselect-btn" id="hobbiesBtn">Выберите хобби</button>
-                <div class="multiselect-dropdown" id="hobbiesDropdown">
-                    <div class="multiselect-option">
-                        <input type="checkbox" id="hobby-reading" value="reading">
-                        <label for="hobby-reading">Чтение</label>
-                    </div>
-                    <div class="multiselect-option">
-                        <input type="checkbox" id="hobby-sports" value="sports">
-                        <label for="hobby-sports">Спорт</label>
-                    </div>
-                    <div class="multiselect-option">
-                        <input type="checkbox" id="hobby-music" value="music">
-                        <label for="hobby-music">Музыка</label>
-                    </div>
-                    <div class="multiselect-option">
-                        <input type="checkbox" id="hobby-travel" value="travel">
-                        <label for="hobby-travel">Путешествия</label>
-                    </div>
-                </div>
-            </div>
-            <div class="error" id="hobbiesError"></div>
-        </div>
-
-        <div class="form-group">
-            <label for="notes">Примечание:</label>
-            <textarea id="notes" name="notes"></textarea>
-        </div>
-
-        <button type="submit">Отправить</button>
-    </form>
-</div>
-
-<div id="modal" class="modal">
-    <div class="modal-content">
-        <p>Ваша анкета отправлена</p>
+    <div id="auth-section">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Пароль">
+        <button onclick="login()">Войти</button>
     </div>
-</div>
 
-<!-- Импорт JavaScript -->
-<script src="static/script.js"></script>
+    <div id="profile-section" style="display: none;">
+        <h2>Добавить анкету</h2>
+        <input type="text" id="name" placeholder="ФИО">
+        <input type="text" id="phone" placeholder="Телефон">
+        <input type="text" id="experience" placeholder="Стаж">
+        <select id="direction">
+            <option>Дизайн</option>
+            <option>Программирование</option>
+            <option>3D-художник</option>
+            <option>Архитектор</option>
+        </select>
+        <button onclick="addProfile()">Добавить</button>
+    </div>
+
+    <div id="profiles-list"></div>
+
+    <script src="app.js"></script>
 </body>
 </html>
