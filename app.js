@@ -20,13 +20,13 @@ const db = firebase.firestore();
 
 // Переключение между формами
 function showRegister() {
-    document.getElementById("login-form").classList.add("hidden");
-    document.getElementById("register-form").classList.remove("hidden");
+    document.getElementById("login-form").style.display = "none"; // Скрываем вход
+    document.getElementById("register-form").style.display = "block"; // Показываем регистрацию
 }
 
 function showLogin() {
-    document.getElementById("register-form").classList.add("hidden");
-    document.getElementById("login-form").classList.remove("hidden");
+    document.getElementById("register-form").style.display = "none"; // Скрываем регистрацию
+    document.getElementById("login-form").style.display = "block"; // Показываем вход
 }
 
 // Регистрация
