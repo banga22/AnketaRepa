@@ -15,3 +15,55 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Вход
+function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+            document.getElementById("auth-section").style.display = "none";
+            document.getElementById("profile-section").style.display = "block";
+            loadProfiles();
+        })
+        .catch(error => alert("Ошибка: " + error.message));
+}
+
+// Добавление анкеты
+function addProfile() {
+    const name = document.getElementById("name").value;
+    const phone = document.getElementById("phone").value;
+    const experience = document.getElementById("experience").value;
+    const direction = document.getElementById("direction").value;
+
+    db.collection("profiles").add({
+        name,
+        phone,
+        experience,
+        direction,
+        userId: auth.currentUser.uid
+    }).then(() => {
+        alert("Анкета добавлена!");
+        loadProfiles();
+    });
+}
+
+// Загрузка всех анкет
+function loadProfiles() {
+    db.collection("profiles").get()
+        .then(querySnapshot => {
+            let html = "";
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                html += `
+                    <div>
+                        <h3>${data.name}</h3>
+                        <p>Телефон: ${data.phone}</p>
+                        <p>Стаж: ${data.experience} лет</p>
+                        <p>Направление: ${data.direction}</p>
+                    </div>
+                `;
+            });
+            document.getElementById("profiles-list").innerHTML = html;
+        });
+}
