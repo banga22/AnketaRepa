@@ -17,6 +17,7 @@
         </div>
     </main>
 
+    <!-- Модальное окно авторизации -->
     <div id="authModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -49,6 +50,40 @@
                 <button id="registerBtn">Зарегистрироваться</button>
                 <p>Уже есть аккаунт? <a href="#" id="showLogin">Войти</a></p>
                 <p id="registerError" class="error-message"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно профиля -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close-profile">&times;</span>
+            <h2>Профиль пользователя</h2>
+            
+            <div id="profileView">
+                <div class="profile-info">
+                    <p><strong>Имя:</strong> <span id="viewFirstName"></span></p>
+                    <p><strong>Фамилия:</strong> <span id="viewLastName"></span></p>
+                    <p><strong>Род занятий:</strong> <span id="viewOccupation"></span></p>
+                </div>
+                <button id="editProfileBtn">Редактировать профиль</button>
+            </div>
+            
+            <div id="profileEdit" style="display:none">
+                <div class="form-group">
+                    <label for="firstName">Имя:</label>
+                    <input type="text" id="firstName">
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Фамилия:</label>
+                    <input type="text" id="lastName">
+                </div>
+                <div class="form-group">
+                    <label for="occupation">Род занятий:</label>
+                    <input type="text" id="occupation">
+                </div>
+                <button id="saveProfileBtn">Сохранить изменения</button>
+                <button id="cancelEditBtn">Отмена</button>
             </div>
         </div>
     </div>
