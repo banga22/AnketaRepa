@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Главная страница</title>
+    <title>IdeaHub - Хаб творческих идей</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
+        <div class="logo">IdeaHub</div>
         <button id="authButton">Вход/Регистрация</button>
     </header>
+    
     <main>
         <!-- Баннер -->
         <section class="banner">
@@ -130,9 +132,27 @@
             </div>
         </div>
     </div>
+
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // Конфигурация Firebase (замените на свои значения)
+        const firebaseConfig = {
+          apiKey: "AIzaSyC8s1_iQ04S5a6rlzOkLbsg-weoCQzzG50",
+          authDomain: "profiles-site.firebaseapp.com",
+          projectId: "profiles-site",
+          storageBucket: "profiles-site.firebasestorage.app",
+          messagingSenderId: "539714982046",
+          appId: "1:539714982046:web:d09296102e765bcfcb2b8f"
+            };
+
+        // Инициализация Firebase
+        const app = initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
+    </script>
     
     <script src="script.js"></script>
 </body>
