@@ -1,5 +1,8 @@
-// script.js - Дополненная версия
 document.addEventListener('DOMContentLoaded', () => {
+    // Инициализация Firebase
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
     // Элементы интерфейса
     const authButton = document.getElementById('authButton');
     const modal = document.getElementById('authModal');
@@ -24,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewFirstName = document.getElementById('viewFirstName');
     const viewLastName = document.getElementById('viewLastName');
     const viewOccupation = document.getElementById('viewOccupation');
-
-    //элементы главной страницы
+    
+    // Элементы идей
     const getStartedBtn = document.getElementById('getStartedBtn');
     const featuredIdeasContainer = document.getElementById('featuredIdeas');
     const recentIdeasContainer = document.getElementById('recentIdeas');
@@ -35,139 +38,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const ideaDescription = document.getElementById('ideaDescription');
     const ideaCategory = document.getElementById('ideaCategory');
     
-    // Инициализация базы данных
-    if (!localStorage.getItem('users')) {
-        localStorage.setItem('users', JSON.stringify({}));
-    }
-        // Инициализация идей в localStorage
-    if (!localStorage.getItem('ideas')) {
-        localStorage.setItem('ideas', JSON.stringify([]));
-    }
+    let currentUser = null;
 
-    // Проверка авторизации при загрузке
-    checkAuth();
-
-        // Кнопка "Начать сейчас"
-    getStartedBtn.addEventListener('click', () => {
-        if (localStorage.getItem('currentUser')) {
-            addIdeaForm.scrollIntoView({ behavior: 'smooth' });
-        } else {
-            modal.style.display = 'block';
-        }
-    });
-
-    // Загрузка и отображение идей
-    function loadIdeas() {
-        const ideas = JSON.parse(localStorage.getItem('ideas')) || [];
-        
-        // Сортируем по дате (новые сначала)
-        const recentIdeas = [...ideas].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
-        
-        // "Популярные" - просто первые 3 из недавних для примера
-        const featuredIdeas = recentIdeas.slice(0, 3);
-        
-        displayIdeas(featuredIdeas, featuredIdeasContainer);
-        displayIdeas(recentIdeas, recentIdeasContainer);
-        
-        // Показываем форму добавления для авторизованных
-        if (localStorage.getItem('currentUser')) {
+    // Проверка авторизации
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            authButton.textContent = 'Профиль';
+            loadProfileData(user.uid);
+            loadIdeas();
             addIdeaForm.style.display = 'block';
+        } else {
+            currentUser = null;
+            authButton.textContent = 'Вход/Регистрация';
+            addIdeaForm.style.display = 'none';
         }
-    }
-    
-    // Отображение идей в контейнере
-    function displayIdeas(ideas, container) {
-        container.innerHTML = '';
-        
-        ideas.forEach(idea => {
-            const ideaCard = document.createElement('div');
-            ideaCard.className = 'idea-card';
-            
-            // Случайное изображение для демо
-            const images = [
-                'linear-gradient(135deg, #1abc9c, #16a085)',
-                'linear-gradient(135deg, #3498db, #2980b9)',
-                'linear-gradient(135deg, #9b59b6, #8e44ad)',
-                'linear-gradient(135deg, #34495e, #2c3e50)',
-                'linear-gradient(135deg, #f1c40f, #f39c12)',
-                'linear-gradient(135deg, #e74c3c, #c0392b)'
-            ];
-            
-            const randomImage = images[Math.floor(Math.random() * images.length)];
-            
-            ideaCard.innerHTML = `
-                <div class="idea-image" style="background: ${randomImage};"></div>
-                <div class="idea-content">
-                    <h3 class="idea-title">${idea.title}</h3>
-                    <p class="idea-description">${idea.description.substring(0, 100)}${idea.description.length > 100 ? '...' : ''}</p>
-                    <div class="idea-meta">
-                        <span>${idea.author}</span>
-                        <span>${new Date(idea.date).toLocaleDateString()}</span>
-                    </div>
-                    <div class="idea-category category-${idea.category}">${getCategoryName(idea.category)}</div>
-                </div>
-            `;
-            
-            container.appendChild(ideaCard);
-        });
-    }
-    
-    // Отправка новой идеи
-    submitIdeaBtn.addEventListener('click', () => {
-        const title = ideaTitle.value.trim();
-        const description = ideaDescription.value.trim();
-        const category = ideaCategory.value;
-        const currentUser = localStorage.getItem('currentUser');
-        
-        if (!title || !description) {
-            alert('Пожалуйста, заполните все поля');
-            return;
-        }
-        
-        if (!currentUser) {
-            alert('Для публикации идеи необходимо авторизоваться');
-            return;
-        }
-        
-        const newIdea = {
-            id: Date.now(),
-            title,
-            description,
-            category,
-            author: currentUser,
-            date: new Date().toISOString()
-        };
-        
-        const ideas = JSON.parse(localStorage.getItem('ideas')) || [];
-        ideas.push(newIdea);
-        localStorage.setItem('ideas', JSON.stringify(ideas));
-        
-        // Очистка формы
-        ideaTitle.value = '';
-        ideaDescription.value = '';
-        
-        // Обновление ленты
-        loadIdeas();
-        
-        alert('Идея успешно опубликована!');
     });
 
-    // Вспомогательная функция для названий категорий
-    function getCategoryName(category) {
-        const categories = {
-            'design': 'Дизайн',
-            'tech': 'Технологии',
-            'art': 'Искусство',
-            'business': 'Бизнес',
-            'education': 'Образование'
-        };
-        return categories[category] || 'Другое';
-    }
-
-    // Обработчики для модальных окон
+    // Открытие модальных окон
     authButton.addEventListener('click', () => {
         if (authButton.textContent === 'Профиль') {
-            loadProfileData();
             profileModal.style.display = 'block';
         } else if (authButton.textContent === 'Выйти') {
             logout();
@@ -199,32 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.style.display = 'block';
     });
 
-    // Обработка входа
-    loginBtn.addEventListener('click', () => {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const errorElement = document.getElementById('loginError');
-        
-        if (!email || !password) {
-            errorElement.textContent = 'Все поля обязательны для заполнения';
-            return;
-        }
-
-        const users = JSON.parse(localStorage.getItem('users'));
-        
-        if (users[email] && users[email].password === password) {
-            // Успешный вход
-            localStorage.setItem('currentUser', email);
-            modal.style.display = 'none';
-            checkAuth();
-            errorElement.textContent = '';
+    // Кнопка "Начать сейчас"
+    getStartedBtn.addEventListener('click', () => {
+        if (currentUser) {
+            addIdeaForm.scrollIntoView({ behavior: 'smooth' });
         } else {
-            errorElement.textContent = 'Неверный email или пароль';
+            modal.style.display = 'block';
         }
     });
 
-    // Обработка регистрации
-    registerBtn.addEventListener('click', () => {
+    // Регистрация
+    registerBtn.addEventListener('click', async () => {
         const email = document.getElementById('regEmail').value;
         const password = document.getElementById('regPassword').value;
         const errorElement = document.getElementById('registerError');
@@ -234,68 +109,79 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        const users = JSON.parse(localStorage.getItem('users'));
+        try {
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+            
+            await db.collection('users').doc(user.uid).set({
+                email: email,
+                firstName: '',
+                lastName: '',
+                occupation: '',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            modal.style.display = 'none';
+            errorElement.textContent = '';
+        } catch (error) {
+            errorElement.textContent = error.message;
+        }
+    });
+
+    // Вход
+    loginBtn.addEventListener('click', async () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const errorElement = document.getElementById('loginError');
         
-        if (users[email]) {
-            errorElement.textContent = 'Пользователь с таким email уже существует';
+        if (!email || !password) {
+            errorElement.textContent = 'Все поля обязательны для заполнения';
             return;
         }
         
-        // Регистрация нового пользователя с пустым профилем
-        users[email] = { 
-            password,
-            firstName: '',
-            lastName: '',
-            occupation: ''
-        };
-        localStorage.setItem('users', JSON.stringify(users));
-        
-        // Автоматический вход после регистрации
-        localStorage.setItem('currentUser', email);
-        modal.style.display = 'none';
-        checkAuth();
-        errorElement.textContent = '';
+        try {
+            await auth.signInWithEmailAndPassword(email, password);
+            modal.style.display = 'none';
+            errorElement.textContent = '';
+        } catch (error) {
+            errorElement.textContent = error.message;
+        }
     });
 
     // Управление профилем
     editProfileBtn.addEventListener('click', () => {
-        // Переключение в режим редактирования
         profileView.style.display = 'none';
         profileEdit.style.display = 'block';
         
         // Заполнение полей текущими данными
-        const currentUser = localStorage.getItem('currentUser');
         if (currentUser) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users[currentUser];
-            
-            firstNameInput.value = user.firstName || '';
-            lastNameInput.value = user.lastName || '';
-            occupationInput.value = user.occupation || '';
+            db.collection('users').doc(currentUser.uid).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        firstNameInput.value = userData.firstName || '';
+                        lastNameInput.value = userData.lastName || '';
+                        occupationInput.value = userData.occupation || '';
+                    }
+                });
         }
     });
     
-    saveProfileBtn.addEventListener('click', () => {
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users[currentUser];
+    saveProfileBtn.addEventListener('click', async () => {
+        if (!currentUser) return;
+        
+        try {
+            await db.collection('users').doc(currentUser.uid).update({
+                firstName: firstNameInput.value,
+                lastName: lastNameInput.value,
+                occupation: occupationInput.value
+            });
             
-            // Обновление данных профиля
-            user.firstName = firstNameInput.value;
-            user.lastName = lastNameInput.value;
-            user.occupation = occupationInput.value;
-            
-            // Сохранение изменений
-            users[currentUser] = user;
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            // Обновление отображения
-            loadProfileData();
-            
-            // Возврат в режим просмотра
+            loadProfileData(currentUser.uid);
             profileEdit.style.display = 'none';
             profileView.style.display = 'block';
+        } catch (error) {
+            console.error("Ошибка сохранения профиля:", error);
         }
     });
     
@@ -304,33 +190,139 @@ document.addEventListener('DOMContentLoaded', () => {
         profileView.style.display = 'block';
     });
 
-    // Проверка авторизации
-    function checkAuth() {
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            authButton.textContent = 'Профиль';
-        } else {
-            authButton.textContent = 'Вход/Регистрация';
-        }
+    // Загрузка данных профиля
+    function loadProfileData(uid) {
+        db.collection('users').doc(uid).get()
+            .then(doc => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    viewFirstName.textContent = userData.firstName || 'Не указано';
+                    viewLastName.textContent = userData.lastName || 'Не указано';
+                    viewOccupation.textContent = userData.occupation || 'Не указано';
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка загрузки профиля:", error);
+            });
     }
 
-    // Загрузка данных профиля
-    function loadProfileData() {
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users[currentUser];
+    // Загрузка идей
+    function loadIdeas() {
+        db.collection('ideas')
+            .orderBy('createdAt', 'desc')
+            .limit(6)
+            .get()
+            .then(querySnapshot => {
+                const recentIdeas = [];
+                querySnapshot.forEach(doc => {
+                    recentIdeas.push({ id: doc.id, ...doc.data() });
+                });
+                
+                const featuredIdeas = recentIdeas.slice(0, 3);
+                displayIdeas(featuredIdeas, featuredIdeasContainer);
+                displayIdeas(recentIdeas, recentIdeasContainer);
+            })
+            .catch(error => {
+                console.error("Ошибка загрузки идей:", error);
+            });
+    }
+    
+    // Отображение идей
+    function displayIdeas(ideas, container) {
+        container.innerHTML = '';
+        
+        ideas.forEach(idea => {
+            const ideaCard = document.createElement('div');
+            ideaCard.className = 'idea-card';
             
-            viewFirstName.textContent = user.firstName || 'Не указано';
-            viewLastName.textContent = user.lastName || 'Не указано';
-            viewOccupation.textContent = user.occupation || 'Не указано';
+            const images = [
+                'linear-gradient(135deg, #1abc9c, #16a085)',
+                'linear-gradient(135deg, #3498db, #2980b9)',
+                'linear-gradient(135deg, #9b59b6, #8e44ad)',
+                'linear-gradient(135deg, #34495e, #2c3e50)',
+                'linear-gradient(135deg, #f1c40f, #f39c12)',
+                'linear-gradient(135deg, #e74c3c, #c0392b)'
+            ];
+            
+            const randomImage = images[Math.floor(Math.random() * images.length)];
+            
+            ideaCard.innerHTML = `
+                <div class="idea-image" style="background: ${randomImage};"></div>
+                <div class="idea-content">
+                    <h3 class="idea-title">${idea.title}</h3>
+                    <p class="idea-description">${idea.description.substring(0, 100)}${idea.description.length > 100 ? '...' : ''}</p>
+                    <div class="idea-meta">
+                        <span>${idea.author}</span>
+                        <span>${idea.createdAt?.toDate().toLocaleDateString() || new Date().toLocaleDateString()}</span>
+                    </div>
+                    <div class="idea-category category-${idea.category}">${getCategoryName(idea.category)}</div>
+                </div>
+            `;
+            
+            container.appendChild(ideaCard);
+        });
+    }
+    
+    // Публикация идеи
+    submitIdeaBtn.addEventListener('click', async () => {
+        const title = ideaTitle.value.trim();
+        const description = ideaDescription.value.trim();
+        const category = ideaCategory.value;
+        
+        if (!title || !description) {
+            alert('Пожалуйста, заполните все поля');
+            return;
         }
+        
+        if (!currentUser) {
+            alert('Для публикации идеи необходимо авторизоваться');
+            return;
+        }
+        
+        try {
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+            const userData = userDoc.data();
+            
+            await db.collection('ideas').add({
+                title,
+                description,
+                category,
+                author: `${userData.firstName} ${userData.lastName}` || userData.email,
+                authorId: currentUser.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                likes: 0
+            });
+            
+            ideaTitle.value = '';
+            ideaDescription.value = '';
+            await loadIdeas();
+            alert('Идея успешно опубликована!');
+        } catch (error) {
+            console.error("Ошибка публикации идеи:", error);
+            alert('Произошла ошибка при публикации идеи');
+        }
+    });
+
+    // Вспомогательная функция для названий категорий
+    function getCategoryName(category) {
+        const categories = {
+            'design': 'Дизайн',
+            'tech': 'Технологии',
+            'art': 'Искусство',
+            'business': 'Бизнес',
+            'education': 'Образование'
+        };
+        return categories[category] || 'Другое';
     }
 
     // Выход из системы
     function logout() {
-        localStorage.removeItem('currentUser');
-        checkAuth();
+        auth.signOut()
+            .then(() => {
+                currentUser = null;
+            })
+            .catch(error => {
+                console.error("Ошибка выхода:", error);
+            });
     }
-    loadIdeas();
 });
